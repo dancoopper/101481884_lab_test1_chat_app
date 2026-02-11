@@ -17,7 +17,7 @@ app.use(express.urlencoded({ extended: true }));
 app.use(express.static(path.join(__dirname, 'public')));
 
 // put fucking password here OMFG 
-mongoose.connect('mongodb+srv://mongodbcomzombie391_db_user:<pass>@assignment1.aenlzmj.mongodb.net/LabTest?appName=Assignment1');
+mongoose.connect('mongodb+srv://mongodbcomzombie391_db_user:chJSeCe2WerMJ6Zf1Z@assignment1.aenlzmj.mongodb.net/LabTest?appName=Assignment1');
 const db = mongoose.connection;
 db.on("error", console.error.bind(console, "connection error: "));
 db.once("open", () => {
@@ -43,8 +43,18 @@ app.get('/', (req, res) => {
 
 
 // socket.io stuff
+// Socket.io Logic
+const connectedUsers = {};
+
 io.on('connection', (socket) => {
     console.log('New client connected', socket.id);
+
+
+    socket.on('login', (username) => {
+        connectedUsers[username] = socket.id;
+        socket.username = username;
+        io.emit('user_list', Object.keys(connectedUsers));
+    });
 
     socket.on('join_room', async (data) => {
         const { username, room } = data;
@@ -54,7 +64,6 @@ io.on('connection', (socket) => {
         // get history
         try {
             const messages = await GroupMessage.find({ room }).lean();
-            //console.log(`Found ${messages.length} messages for room ${room}. Emitting to ${socket.id}`);
             socket.emit('load_history', messages);
         } catch (err) {
             console.error('Error fetching history:', err);
@@ -96,15 +105,66 @@ io.on('connection', (socket) => {
         });
     });
 
-    // typing indicator
-    socket.on('typing', (data) => {
-        const { username, room } = data;
-        socket.broadcast.to(room).emit('typing', {
-            username: username
+    // Private Message
+    socket.on('private_message', async (data) => {
+        const { from_user, to_user, message } = data;
+
+        const newPrivateMessage = new PrivateMessage({
+            from_user,
+            to_user,
+            message
+        });
+        await newPrivateMessage.save();
+
+        const toSocketId = connectedUsers[to_user];
+        if (toSocketId) {
+            io.to(toSocketId).emit('private_message', {
+                from_user,
+                to_user,
+                text: message,
+                date_sent: newPrivateMessage.date_sent
+            });
+        }
+
+        socket.emit('private_message', {
+            from_user,
+            to_user,
+            text: message,
+            date_sent: newPrivateMessage.date_sent
         });
     });
 
+    socket.on('get_private_history', async (data) => {
+        const { user1, user2 } = data;
+        try {
+            const messages = await PrivateMessage.find({
+                $or: [
+                    { from_user: user1, to_user: user2 },
+                    { from_user: user2, to_user: user1 }
+                ]
+            }).sort({ date_sent: 1 }).lean();
+
+            socket.emit('load_history', messages);
+        } catch (err) {
+            console.error(err);
+        }
+    });
+
+    // typing indicator
+    socket.on('typing', (data) => {
+        const { username, room } = data;
+        if (room) {
+            socket.broadcast.to(room).emit('typing', {
+                username: username
+            });
+        }
+    });
+
     socket.on('disconnect', () => {
+        if (socket.username) {
+            delete connectedUsers[socket.username];
+            io.emit('user_list', Object.keys(connectedUsers));
+        }
         console.log('Client disconnected');
     });
 

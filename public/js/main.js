@@ -53,12 +53,20 @@ chatForm.addEventListener('submit', (e) => {
     const msg = msgInput.value;
 
     if (msg) {
-        // Emit message to server
-        socket.emit('chat_message', {
-            from_user: username,
-            room: currentRoom,
-            message: msg
-        });
+        if (activePrivateUser) {
+            socket.emit('private_message', {
+                from_user: username,
+                to_user: activePrivateUser,
+                message: msg
+            });
+        } else if (currentRoom) {
+            // Emit message to server
+            socket.emit('chat_message', {
+                from_user: username,
+                room: currentRoom,
+                message: msg
+            });
+        }
 
         // Clear input
         msgInput.value = '';
@@ -96,10 +104,59 @@ socket.on('typing', (data) => {
 
 // Functions
 
-// Listen for history
+const usersList = document.getElementById('users-list');
+let activePrivateUser = null;
+
+
+socket.emit('login', username);
+
+socket.on('user_list', (users) => {
+    usersList.innerHTML = '';
+    users.forEach(user => {
+        if (user !== username) { // Don't show self
+            const btn = document.createElement('button');
+            btn.classList.add('btn', 'btn-outline-secondary', 'w-100', 'mb-2', 'text-start');
+            btn.innerText = user;
+            btn.addEventListener('click', () => startPrivateChat(user));
+            usersList.appendChild(btn);
+        }
+    });
+});
+
+socket.on('private_message', (message) => {
+
+    if (activePrivateUser && (message.from_user === activePrivateUser || message.from_user === username)) {
+        outputMessage(message);
+        chatMessages.scrollTop = chatMessages.scrollHeight;
+    } else {
+
+        if (message.from_user !== username) {
+            console.log(`New private message from ${message.from_user}`);
+            alert(`New private message from ${message.from_user}`);
+
+        }
+    }
+});
+
+function startPrivateChat(targetUser) {
+    if (currentRoom) {
+        leaveRoom();
+    }
+
+    activePrivateUser = targetUser;
+    currentRoomName.innerText = `Private Chat with ${targetUser}`;
+
+    msgInput.disabled = false;
+    sendBtn.disabled = false;
+    chatMessages.innerHTML = '';
+
+    socket.emit('get_private_history', { user1: username, user2: targetUser });
+}
+
+
 socket.on('load_history', (messages) => {
-    console.log('Received history event. Message count:', messages ? messages.length : 'null');
-    console.log('Messages data:', messages);
+    // console.log('Received history event. Message count:', messages ? messages.length : 'null');
+    // console.log('Messages data:', messages);
 
     if (Array.isArray(messages)) {
         messages.forEach(msg => {
@@ -115,6 +172,7 @@ socket.on('load_history', (messages) => {
 
 
 function joinRoom(room) {
+    activePrivateUser = null;
     socket.emit('join_room', { username, room });
     currentRoom = room;
 
