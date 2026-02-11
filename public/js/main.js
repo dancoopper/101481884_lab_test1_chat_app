@@ -218,11 +218,14 @@ function outputMessage(message) {
     } else {
         time = new Date().toLocaleTimeString();
     }
-
     div.innerHTML = `
-        <div class="message-meta text-end" style="font-size: 0.7em;">${message.from_user} <span>${time}</span></div>
-        <p class="mb-0">${message.text}</p>
-    `;
+<div class="message">
+  <div class="meta">
+    <span>${message.from_user}</span> <span class="time">${time}</span>
+  </div>
+  <div class="text">${message.text}</div>
+</div>`
+
 
     document.getElementById('chat-messages').appendChild(div);
 }

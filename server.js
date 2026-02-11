@@ -43,7 +43,6 @@ app.get('/', (req, res) => {
 
 
 // socket.io stuff
-// Socket.io Logic
 const connectedUsers = {};
 
 io.on('connection', (socket) => {

@@ -1,27 +1,41 @@
+/* --- Variables & Reset --- */
 :root {
     --discord-bg: #36393f;
+    /* Main chat background */
     --discord-sidebar: #2f3136;
+    /* Sidebar background */
     --discord-element: #202225;
+    /* Ultra dark elements */
     --discord-input: #40444b;
+    /* Input fields */
     --discord-text: #dcddde;
+    /* Primary text */
     --discord-muted: #72767d;
+    /* Secondary text */
     --discord-blurple: #5865F2;
+    /* Primary button color */
     --discord-green: #3ba55c;
+    /* Success/Online */
     --discord-red: #ed4245;
+    /* Danger/Logout */
     --discord-yellow: #faa61a;
+    /* Warning */
     --discord-hover: #32353b;
+    /* Hover states */
     --border-radius: 5px;
 }
 
 html,
 body {
     height: 100%;
+    overflow: hidden;
+    /* Prevent body scroll, handle internally */
     background-color: var(--discord-bg);
     color: var(--discord-text);
     font-family: 'gg sans', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
 }
 
-
+/* --- Layout & Sidebar --- */
 .container-fluid,
 .row {
     height: 100%;
@@ -48,6 +62,7 @@ body {
     margin-bottom: 10px;
 }
 
+/* --- Chat Area Layout --- */
 .chat-area {
     background-color: var(--discord-bg);
     display: flex;
@@ -55,6 +70,7 @@ body {
     height: 100%;
 }
 
+/* --- Header --- */
 .chat-header {
     background-color: var(--discord-bg);
     border-bottom: 1px solid #26272d;
@@ -70,14 +86,17 @@ body {
     color: #fff;
 }
 
+/* --- Messages Area --- */
 #chat-messages {
     flex: 1;
     overflow-y: auto;
     display: flex;
     flex-direction: column;
     gap: 15px;
+    /* Spacing between messages */
 }
 
+/* Scrollbar Styling (Webkit) */
 ::-webkit-scrollbar {
     width: 8px;
     height: 8px;
@@ -93,42 +112,77 @@ body {
     border-radius: 4px;
 }
 
+/* --- Hypothetical Message Styling --- */
+/* Note: Since I cannot see your JS message generator, 
+   these classes assume standard div structures. 
+   Apply these classes in your main.js 
+*/
+.message {
+    padding: 2px 0;
+    line-height: 1.375rem;
+}
+
+.message:hover {
+    background-color: rgba(4, 4, 5, 0.07);
+}
+
+.meta {
+    font-size: 0.9rem;
+    margin-bottom: 2px;
+}
+
+.meta span {
+    /* Username style */
+    font-weight: 500;
+    color: #fff;
+    margin-right: 8px;
+    cursor: pointer;
+}
+
+.meta span:hover {
+    text-decoration: underline;
+}
+
+.text {
+    color: var(--discord-text);
+    font-weight: 400;
+}
+
+.time {
+    font-size: 0.75rem;
+    color: var(--discord-muted);
+}
+
+/* --- Inputs & Forms (Bootstrap Overrides) --- */
 .chat-input {
     background-color: var(--discord-bg);
     padding-bottom: 24px !important;
+    /* Extra spacing at bottom */
 }
 
+/* Override Bootstrap Form Control */
 .form-control,
 .form-select {
     background-color: var(--discord-input) !important;
-    border: 1px solid rgba(0, 0, 0, 0.3) !important;
+    border: none !important;
     color: var(--discord-text) !important;
-    border-radius: 4px !important;
-    transition: border-color 0.2s ease-in-out;
+    border-radius: 8px !important;
 }
 
 .form-control:focus,
 .form-select:focus {
     background-color: var(--discord-input) !important;
     box-shadow: none !important;
-    border-color: var(--discord-blurple) !important;
     color: #fff !important;
 }
 
+/* Placeholder color */
 ::placeholder {
     color: var(--discord-muted) !important;
     opacity: 1;
 }
 
-label.form-label {
-    text-transform: uppercase;
-    font-size: 0.75rem;
-    font-weight: 700;
-    color: var(--discord-muted);
-    margin-bottom: 8px;
-}
-
-/* buttons */
+/* --- Buttons --- */
 .btn {
     border: none;
     font-weight: 500;
@@ -142,6 +196,7 @@ label.form-label {
 
 .btn-primary:hover {
     background-color: #4752c4;
+    /* Darker blurple */
 }
 
 .btn-danger {
@@ -153,13 +208,15 @@ label.form-label {
     color: #fff;
 }
 
-.btn:disabled {
+/* Disabled states */
+.btn:disabled,
+.form-control:disabled {
     opacity: 0.5;
     cursor: not-allowed;
     background-color: var(--discord-input);
 }
 
-
+/* --- Typing Indicator --- */
 #typing-indicator {
     height: 20px;
     color: var(--discord-text);
@@ -168,7 +225,7 @@ label.form-label {
     margin-bottom: 5px;
 }
 
-
+/* --- User List --- */
 #users-list li {
     list-style: none;
     padding: 8px 10px;
@@ -180,51 +237,4 @@ label.form-label {
 #users-list li:hover {
     background-color: var(--discord-hover);
     color: #fff;
-}
-
-/* ========================================*/
-
-
-.card {
-    background-color: var(--discord-sidebar);
-    border: none;
-    box-shadow: 0 2px 10px 0 rgba(0, 0, 0, 0.2) !important;
-    color: var(--discord-text);
-    margin-top: 10vh;
-}
-
-.card-header {
-    background-color: var(--discord-sidebar) !important;
-    border-bottom: none;
-    text-align: center;
-    padding-top: 2rem;
-}
-
-.card-header h4 {
-    color: #fff;
-    font-weight: 700;
-    font-size: 1.5rem;
-}
-
-.card-body {
-    padding: 2rem;
-}
-
-
-a {
-    color: var(--discord-blurple);
-    text-decoration: none;
-}
-
-a:hover {
-    color: var(--discord-blurple);
-    text-decoration: underline;
-}
-
-/* for error messages and the like */
-.text-danger {
-    color: var(--discord-red) !important;
-    font-size: 0.9rem;
-    text-transform: uppercase;
-    font-weight: bold;
 }
